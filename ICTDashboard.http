@@ -1,0 +1,6 @@
+@ICTDashboard_HostAddress = http://localhost:5211
+
+GET {{ICTDashboard_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
