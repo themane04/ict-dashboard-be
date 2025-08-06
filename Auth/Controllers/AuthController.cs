@@ -30,8 +30,7 @@ public class AuthController : ControllerBase
             return BadRequest(new ErrorResponse { Errors = ex.Errors });
         }
     }
-
-
+    
     [HttpPost("signup")]
     public async Task<IActionResult> Register([FromBody] SignUpRequest request)
     {
