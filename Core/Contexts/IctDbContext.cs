@@ -1,4 +1,4 @@
-﻿using ICTDashboard.Models;
+﻿using ICTDashboard.Auth.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace ICTDashboard.Core.Contexts;

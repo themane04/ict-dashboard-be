@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using ICTDashboard.Auth.Enums;
 
-namespace ICTDashboard.Models;
+namespace ICTDashboard.Auth.Models;
 
 public class User
 {

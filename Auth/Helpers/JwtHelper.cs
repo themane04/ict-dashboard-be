@@ -1,7 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using ICTDashboard.Models;
+using ICTDashboard.Auth.Models;
 using Microsoft.IdentityModel.Tokens;
 
 namespace ICTDashboard.Auth.Helpers;

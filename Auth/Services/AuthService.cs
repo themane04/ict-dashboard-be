@@ -1,10 +1,10 @@
 ﻿using ICTDashboard.Auth.Enums;
 using ICTDashboard.Auth.Helpers;
+using ICTDashboard.Auth.Models;
 using ICTDashboard.Auth.Models.Dtos;
 using ICTDashboard.Auth.Services.Interfaces;
 using ICTDashboard.Core.Contexts;
 using ICTDashboard.Core.Models;
-using ICTDashboard.Models;
 using Microsoft.EntityFrameworkCore;
 using SignInResult = ICTDashboard.Auth.Models.Dtos.SignInResult;
 using ValidationException = ICTDashboard.Auth.Exceptions.ValidationException;
