@@ -1,4 +1,5 @@
 using ICTDashboard.Core.Extensions;
+using ICTDashboard.Core.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +11,8 @@ builder.Services.AddOpenApi();
 builder.Services.AddDatabase(builder.Configuration);
 
 var app = builder.Build();
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {

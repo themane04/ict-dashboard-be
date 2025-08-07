@@ -2,6 +2,6 @@
 
 public class ErrorDetail
 {
-    public string Field { get; set; } = null!;
-    public string Message { get; set; } = null!;
+    public string Field { get; set; } = "";
+    public string Message { get; set; } = "";
 }
