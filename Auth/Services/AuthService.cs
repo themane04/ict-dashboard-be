@@ -1,5 +1,4 @@
-﻿using ICTDashboard.Auth.Enums;
-using ICTDashboard.Auth.Helpers;
+﻿using ICTDashboard.Auth.Helpers;
 using ICTDashboard.Auth.Models;
 using ICTDashboard.Auth.Models.Dtos;
 using ICTDashboard.Auth.Services.Interfaces;
@@ -64,6 +63,9 @@ public class AuthService : IAuthService
         if (await _context.Users.AnyAsync(u => u.Username == request.Username))
             errors.Add(new ErrorDetail { Field = "username", Message = "Username already exists." });
 
+        if (request.Password != request.ConfirmPassword)
+            errors.Add(new ErrorDetail { Field = "confirmPassword", Message = "Passwords do not match." });
+
         if (errors.Any())
             throw new ValidationException(errors);
 
@@ -72,7 +74,7 @@ public class AuthService : IAuthService
             Username = request.Username,
             Email = request.Email,
             PasswordHash = PasswordHelper.Hash(request.Password),
-            Role = UserRole.Coach
+            Role = request.Role
         };
 
         _context.Users.Add(user);

@@ -11,4 +11,13 @@ public class IctDbContext : DbContext
     }
 
     public DbSet<User> Users { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<User>()
+            .Property(u => u.Role)
+            .HasConversion<string>();
+
+        base.OnModelCreating(modelBuilder);
+    }
 }
