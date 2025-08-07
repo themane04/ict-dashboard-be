@@ -1,5 +1,7 @@
-﻿using ICTDashboard.Auth.Models.Dtos;
+﻿using System.Security.Claims;
+using ICTDashboard.Auth.Models.Dtos;
 using ICTDashboard.Auth.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ICTDashboard.Auth.Controllers;
@@ -13,6 +15,25 @@ public class AuthController : ControllerBase
     public AuthController(IAuthService auth)
     {
         _auth = auth;
+    }
+
+    [Authorize]
+    [HttpGet("me")]
+    public IActionResult GetMe()
+    {
+        var claims = User;
+        var userId = claims.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var username = claims.FindFirst(ClaimTypes.Name)?.Value;
+        var email = claims.FindFirst(ClaimTypes.Email)?.Value;
+        var role = claims.FindFirst(ClaimTypes.Role)?.Value;
+
+        return Ok(new
+        {
+            id = userId,
+            username,
+            email,
+            role
+        });
     }
 
     [HttpPost("signin")]

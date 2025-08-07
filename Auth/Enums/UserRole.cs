@@ -2,6 +2,5 @@
 
 public enum UserRole
 {
-    Dashboard,
     Coach
 }
