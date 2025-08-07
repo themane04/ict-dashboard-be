@@ -6,6 +6,7 @@ using ICTDashboard.Core.Contexts;
 using ICTDashboard.Core.Models;
 using ICTDashboard.Models;
 using Microsoft.EntityFrameworkCore;
+using SignInResult = ICTDashboard.Auth.Models.Dtos.SignInResult;
 using ValidationException = ICTDashboard.Auth.Exceptions.ValidationException;
 
 namespace ICTDashboard.Auth.Services;
@@ -21,22 +22,27 @@ public class AuthService : IAuthService
         _config = config;
     }
 
-    public async Task<SignInResponse> SignInAsync(SignInRequest request)
+    public async Task<SignInResult> SignInAsync(SignInRequest request)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
 
         if (user == null || !PasswordHelper.Verify(user.PasswordHash, request.Password))
         {
-            throw new ValidationException(new List<ErrorDetail>
+            return new SignInResult
             {
-                new() { Field = "credentials", Message = "Invalid email or password." }
-            });
+                IsSuccess = false,
+                Errors = new[]
+                {
+                    new ErrorDetail { Field = "credentials", Message = "Invalid email or password." }
+                }
+            };
         }
 
         var token = JwtHelper.GenerateToken(user, _config["Jwt:Key"]!);
 
-        return new SignInResponse
+        return new SignInResult
         {
+            IsSuccess = true,
             Token = token,
             User = new SignUpResponse
             {

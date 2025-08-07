@@ -4,6 +4,6 @@ namespace ICTDashboard.Auth.Services.Interfaces;
 
 public interface IAuthService
 {
-    Task<SignInResponse> SignInAsync(SignInRequest request);
+    Task<SignInResult> SignInAsync(SignInRequest request);
     Task<SignUpResponse> SignUpAsync(SignUpRequest request);
 }

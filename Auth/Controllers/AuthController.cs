@@ -1,7 +1,5 @@
-﻿using ICTDashboard.Auth.Exceptions;
-using ICTDashboard.Auth.Models.Dtos;
+﻿using ICTDashboard.Auth.Models.Dtos;
 using ICTDashboard.Auth.Services.Interfaces;
-using ICTDashboard.Core.Models.Dtos;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ICTDashboard.Auth.Controllers;
@@ -18,19 +16,28 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("signin")]
-    public async Task<IActionResult> Login([FromBody] SignInRequest request)
+    public async Task<IActionResult> SignIn([FromBody] SignInRequest request)
     {
-        try
+        var result = await _auth.SignInAsync(request);
+
+        if (!result.IsSuccess)
         {
-            var result = await _auth.SignInAsync(request);
-            return Ok(result);
+            return BadRequest(new { errors = result.Errors });
         }
-        catch (ValidationException ex)
+
+        var cookieOptions = new CookieOptions
         {
-            return BadRequest(new ErrorResponse { Errors = ex.Errors });
-        }
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            Expires = DateTime.UtcNow.AddHours(1)
+        };
+
+        Response.Cookies.Append("access_token", result.Token!, cookieOptions);
+
+        return Ok(new { user = result.User });
     }
-    
+
     [HttpPost("signup")]
     public async Task<IActionResult> Register([FromBody] SignUpRequest request)
     {
