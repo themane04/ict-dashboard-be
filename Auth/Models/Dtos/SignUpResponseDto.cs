@@ -1,6 +1,6 @@
 ﻿namespace ICTDashboard.Auth.Models.Dtos;
 
-public class SignUpResponse
+public class SignUpResponseDto
 {
     public int Id { get; set; }
     public string FirstName { get; set; } = string.Empty;

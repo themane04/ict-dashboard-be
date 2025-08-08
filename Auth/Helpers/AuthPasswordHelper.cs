@@ -2,7 +2,7 @@
 
 namespace ICTDashboard.Auth.Helpers;
 
-public static class PasswordHelper
+public static class AuthPasswordHelper
 {
     public static string Hash(string password)
     {

@@ -1,8 +1,11 @@
 ﻿using System.Security.Claims;
 using ICTDashboard.Auth.Models.Dtos;
 using ICTDashboard.Auth.Services.Interfaces;
+using ICTDashboard.Core.Contexts;
+using ICTDashboard.Profile.Models.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace ICTDashboard.Auth.Controllers;
 
@@ -19,27 +22,38 @@ public class AuthController : ControllerBase
 
     [Authorize]
     [HttpGet("me")]
-    public IActionResult GetMe()
+    public async Task<ActionResult<UserDto>> GetMe([FromServices] IctDbContext db)
     {
-        var claims = User;
-        var userId = claims.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var username = claims.FindFirst(ClaimTypes.Name)?.Value;
-        var email = claims.FindFirst(ClaimTypes.Email)?.Value;
-        var role = claims.FindFirst(ClaimTypes.Role)?.Value;
+        if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id))
+            return Unauthorized();
 
-        return Ok(new
+        var user = await db.Users
+            .Include(u => u.Profile)
+            .FirstOrDefaultAsync(u => u.Id == id);
+
+        if (user == null) return Unauthorized();
+
+        return Ok(new UserDto
         {
-            id = userId,
-            username,
-            email,
-            role
+            Id = user.Id,
+            Username = user.Username,
+            Email = user.Email,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Role = user.Role.ToString(),
+            Profile = new UserProfileDto
+            {
+                PictureUrl = user.Profile.PictureUrl,
+                Birthday = user.Profile.Birthday,
+                Bio = user.Profile.Bio
+            }
         });
     }
 
     [HttpPost("signin")]
-    public async Task<IActionResult> SignIn([FromBody] SignInRequest request)
+    public async Task<IActionResult> SignIn([FromBody] SignInRequestDto requestDto)
     {
-        var result = await _auth.SignInAsync(request);
+        var result = await _auth.SignInAsync(requestDto);
 
         if (!result.IsSuccess)
         {
@@ -50,19 +64,19 @@ public class AuthController : ControllerBase
         {
             HttpOnly = true,
             Secure = true,
-            SameSite = SameSiteMode.Strict,
-            Expires = DateTime.UtcNow.AddHours(1)
+            SameSite = SameSiteMode.None,
+            Expires = DateTimeOffset.UtcNow.AddHours(1),
+            Path = "/"
         };
 
         Response.Cookies.Append("access_token", result.Token!, cookieOptions);
-
-        return Ok(new { user = result.User });
+        return NoContent();
     }
 
     [HttpPost("signup")]
-    public async Task<IActionResult> Register([FromBody] SignUpRequest request)
+    public async Task<IActionResult> Register([FromBody] SignUpRequestDto requestDto)
     {
-        var result = await _auth.SignUpAsync(request);
-        return Ok(result);
+        await _auth.SignUpAsync(requestDto);
+        return NoContent();
     }
 }

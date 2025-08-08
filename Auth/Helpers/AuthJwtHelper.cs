@@ -6,7 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace ICTDashboard.Auth.Helpers;
 
-public static class JwtHelper
+public static class AuthJwtHelper
 {
     public static string GenerateToken(User user, string jwtKey)
     {

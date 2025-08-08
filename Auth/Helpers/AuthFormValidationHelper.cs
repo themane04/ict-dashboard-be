@@ -7,13 +7,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ICTDashboard.Auth.Helpers;
 
-public class FormValidationHelper
+public class AuthFormValidationHelper
 {
-    public static SignInResult ValidateSignIn(User? user, string password)
+    public static SignInResultDto ValidateSignIn(User? user, string password)
     {
-        if (user == null || !PasswordHelper.Verify(user.PasswordHash, password))
+        if (user == null || !AuthPasswordHelper.Verify(user.PasswordHash, password))
         {
-            return new SignInResult
+            return new SignInResultDto
             {
                 IsSuccess = false,
                 Errors = new[]
@@ -23,11 +23,11 @@ public class FormValidationHelper
             };
         }
 
-        return new SignInResult { IsSuccess = true };
+        return new SignInResultDto { IsSuccess = true };
     }
 
-    public static async Task<(UserRole? ParsedRole, List<ErrorDetail> Errors)>
-        ValidateSignUpAsync(IctDbContext db, SignUpRequest r, CancellationToken ct = default)
+    public static async Task<(AuthUserRole? ParsedRole, List<ErrorDetail> Errors)>
+        ValidateSignUpAsync(IctDbContext db, SignUpRequestDto r, CancellationToken ct = default)
     {
         var errors = new List<ErrorDetail>();
 
@@ -54,8 +54,8 @@ public class FormValidationHelper
         if (await db.Users.AnyAsync(u => u.Email == email, ct))
             errors.Add(new ErrorDetail { Field = "email", Message = "Email already exists." });
 
-        if (!Enum.TryParse<UserRole>(r.Role, true, out var parsedRole) ||
-            (parsedRole != UserRole.Coach && parsedRole != UserRole.Member))
+        if (!Enum.TryParse<AuthUserRole>(r.Role, true, out var parsedRole) ||
+            (parsedRole != AuthUserRole.Coach && parsedRole != AuthUserRole.Member))
         {
             errors.Add(new ErrorDetail { Field = "role", Message = "Invalid user role." });
             return (null, errors);

@@ -13,7 +13,7 @@ public class User
 
     [MaxLength(255)] public required string PasswordHash { get; set; }
 
-    public UserRole Role { get; set; }
+    public AuthUserRole Role { get; set; }
 
     [MaxLength(50)] public required string FirstName { get; set; }
     [MaxLength(50)] public required string LastName { get; set; }

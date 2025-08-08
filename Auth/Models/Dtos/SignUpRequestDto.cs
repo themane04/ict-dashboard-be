@@ -1,6 +1,6 @@
 ﻿namespace ICTDashboard.Auth.Models.Dtos;
 
-public class SignUpRequest
+public class SignUpRequestDto
 {
     public string? FirstName { get; set; }
     public string? LastName { get; set; }

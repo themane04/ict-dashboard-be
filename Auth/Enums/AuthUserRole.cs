@@ -1,6 +1,6 @@
 ﻿namespace ICTDashboard.Auth.Enums;
 
-public enum UserRole
+public enum AuthUserRole
 {
     Member,
     Coach

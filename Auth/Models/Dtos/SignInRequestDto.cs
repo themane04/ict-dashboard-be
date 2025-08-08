@@ -1,6 +1,6 @@
 ﻿namespace ICTDashboard.Auth.Models.Dtos;
 
-public class SignInRequest
+public class SignInRequestDto
 {
     public string Email { get; set; } = null!;
     public string Password { get; set; } = null!;

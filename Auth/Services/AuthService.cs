@@ -5,7 +5,6 @@ using ICTDashboard.Auth.Services.Interfaces;
 using ICTDashboard.Core.Contexts;
 using ICTDashboard.Profile.Models;
 using Microsoft.EntityFrameworkCore;
-using SignInResult = ICTDashboard.Auth.Models.Dtos.SignInResult;
 using ValidationException = ICTDashboard.Auth.Exceptions.ValidationException;
 
 namespace ICTDashboard.Auth.Services;
@@ -21,60 +20,42 @@ public class AuthService : IAuthService
         _config = config;
     }
 
-    public async Task<SignInResult> SignInAsync(SignInRequest request)
+    public async Task<SignInResultDto> SignInAsync(SignInRequestDto requestDto)
     {
         var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Email == request.Email);
+            .FirstOrDefaultAsync(u => u.Email == requestDto.Email);
 
-        var validation = FormValidationHelper.ValidateSignIn(user, request.Password);
+        var validation = AuthFormValidationHelper.ValidateSignIn(user, requestDto.Password);
         if (!validation.IsSuccess)
             return validation;
 
-        var token = JwtHelper.GenerateToken(user!, _config["Jwt:Key"]!);
+        var token = AuthJwtHelper.GenerateToken(user!, _config["Jwt:Key"]!);
 
-        return new SignInResult
+        return new SignInResultDto
         {
             IsSuccess = true,
-            Token = token,
-            User = new SignUpResponse
-            {
-                Id = user!.Id,
-                Username = user.Username,
-                Email = user.Email,
-                Role = user.Role.ToString()
-            }
+            Token = token
         };
     }
 
-    public async Task<SignUpResponse> SignUpAsync(SignUpRequest request)
+    public async Task SignUpAsync(SignUpRequestDto requestDto)
     {
-        var (parsedRole, errors) = await FormValidationHelper.ValidateSignUpAsync(_context, request);
-
+        var (parsedRole, errors) = await AuthFormValidationHelper.ValidateSignUpAsync(_context, requestDto);
         if (errors.Count > 0)
             throw new ValidationException(errors);
 
         var user = new User
         {
-            FirstName = request.FirstName.Trim(),
-            LastName = request.LastName.Trim(),
-            Username = request.Username.Trim(),
-            Email = request.Email.Trim(),
+            FirstName = requestDto.FirstName!.Trim(),
+            LastName = requestDto.LastName!.Trim(),
+            Username = requestDto.Username!.Trim(),
+            Email = requestDto.Email!.Trim(),
             Role = parsedRole!.Value,
-            PasswordHash = PasswordHelper.Hash(request.Password),
+            PasswordHash = AuthPasswordHelper.Hash(requestDto.Password!),
             Profile = new UserProfile()
         };
 
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
-
-        return new SignUpResponse
-        {
-            Id = user.Id,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            Username = user.Username,
-            Email = user.Email,
-            Role = user.Role.ToString()
-        };
     }
 }

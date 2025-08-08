@@ -2,10 +2,9 @@
 
 namespace ICTDashboard.Auth.Models.Dtos;
 
-public class SignInResult
+public class SignInResultDto
 {
     public bool IsSuccess { get; set; }
     public string? Token { get; set; }
-    public SignUpResponse? User { get; set; }
     public ErrorDetail[]? Errors { get; set; }
 }
