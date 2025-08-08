@@ -3,7 +3,6 @@ using ICTDashboard.Auth.Models;
 using ICTDashboard.Auth.Models.Dtos;
 using ICTDashboard.Auth.Services.Interfaces;
 using ICTDashboard.Core.Contexts;
-using ICTDashboard.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using SignInResult = ICTDashboard.Auth.Models.Dtos.SignInResult;
 using ValidationException = ICTDashboard.Auth.Exceptions.ValidationException;
@@ -23,21 +22,14 @@ public class AuthService : IAuthService
 
     public async Task<SignInResult> SignInAsync(SignInRequest request)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Email == request.Email);
 
-        if (user == null || !PasswordHelper.Verify(user.PasswordHash, request.Password))
-        {
-            return new SignInResult
-            {
-                IsSuccess = false,
-                Errors = new[]
-                {
-                    new ErrorDetail { Field = "credentials", Message = "Invalid email or password." }
-                }
-            };
-        }
+        var validation = FormValidationHelper.ValidateSignIn(user, request.Password);
+        if (!validation.IsSuccess)
+            return validation;
 
-        var token = JwtHelper.GenerateToken(user, _config["Jwt:Key"]!);
+        var token = JwtHelper.GenerateToken(user!, _config["Jwt:Key"]!);
 
         return new SignInResult
         {
@@ -45,7 +37,7 @@ public class AuthService : IAuthService
             Token = token,
             User = new SignUpResponse
             {
-                Id = user.Id,
+                Id = user!.Id,
                 Username = user.Username,
                 Email = user.Email,
                 Role = user.Role.ToString()
@@ -55,26 +47,17 @@ public class AuthService : IAuthService
 
     public async Task<SignUpResponse> SignUpAsync(SignUpRequest request)
     {
-        var errors = new List<ErrorDetail>();
+        var (parsedRole, errors) = await FormValidationHelper.ValidateSignUpAsync(_context, request);
 
-        if (await _context.Users.AnyAsync(u => u.Email == request.Email))
-            errors.Add(new ErrorDetail { Field = "email", Message = "Email already exists." });
-
-        if (await _context.Users.AnyAsync(u => u.Username == request.Username))
-            errors.Add(new ErrorDetail { Field = "username", Message = "Username already exists." });
-
-        if (request.Password != request.ConfirmPassword)
-            errors.Add(new ErrorDetail { Field = "confirmPassword", Message = "Passwords do not match." });
-
-        if (errors.Any())
+        if (errors.Count > 0)
             throw new ValidationException(errors);
 
         var user = new User
         {
-            Username = request.Username,
-            Email = request.Email,
+            Username = request.Username.Trim(),
+            Email = request.Email.Trim(),
             PasswordHash = PasswordHelper.Hash(request.Password),
-            Role = request.Role
+            Role = parsedRole!.Value
         };
 
         _context.Users.Add(user);

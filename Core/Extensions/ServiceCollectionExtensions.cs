@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Text.Json.Serialization;
 using ICTDashboard.Auth.Services;
 using ICTDashboard.Auth.Services.Interfaces;
 using ICTDashboard.Core.Contexts;
@@ -10,6 +11,14 @@ namespace ICTDashboard.Core.Extensions;
 
 public static class ServiceCollectionExtensions
 {
+    public static IServiceCollection AddMvcWithEnumSupport(this IServiceCollection services)
+    {
+        services.AddControllers()
+            .AddJsonOptions(o => { o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); });
+
+        return services;
+    }
+
     public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration config)
     {
         var jwtKey = config["Jwt:Key"]!;

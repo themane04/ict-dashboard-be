@@ -5,6 +5,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddAppServices();
+builder.Services.AddMvcWithEnumSupport();
 builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.AddCorsPolicy();
 builder.Services.AddOpenApi();
