@@ -3,6 +3,7 @@ using ICTDashboard.Auth.Models;
 using ICTDashboard.Auth.Models.Dtos;
 using ICTDashboard.Auth.Services.Interfaces;
 using ICTDashboard.Core.Contexts;
+using ICTDashboard.Profile.Models;
 using Microsoft.EntityFrameworkCore;
 using SignInResult = ICTDashboard.Auth.Models.Dtos.SignInResult;
 using ValidationException = ICTDashboard.Auth.Exceptions.ValidationException;
@@ -54,10 +55,13 @@ public class AuthService : IAuthService
 
         var user = new User
         {
+            FirstName = request.FirstName.Trim(),
+            LastName = request.LastName.Trim(),
             Username = request.Username.Trim(),
             Email = request.Email.Trim(),
+            Role = parsedRole!.Value,
             PasswordHash = PasswordHelper.Hash(request.Password),
-            Role = parsedRole!.Value
+            Profile = new UserProfile()
         };
 
         _context.Users.Add(user);
@@ -66,6 +70,8 @@ public class AuthService : IAuthService
         return new SignUpResponse
         {
             Id = user.Id,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
             Username = user.Username,
             Email = user.Email,
             Role = user.Role.ToString()

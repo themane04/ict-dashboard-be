@@ -34,14 +34,25 @@ public class FormValidationHelper
         var email = r.Email?.Trim();
         var username = r.Username?.Trim();
 
-        if (await db.Users.AnyAsync(u => u.Email == email, ct))
-            errors.Add(new ErrorDetail { Field = "email", Message = "Email already exists." });
+        if (string.IsNullOrWhiteSpace(r.FirstName))
+            errors.Add(new ErrorDetail { Field = "firstName", Message = "First name is required." });
+        if (string.IsNullOrWhiteSpace(r.LastName))
+            errors.Add(new ErrorDetail { Field = "lastName", Message = "Last name is required." });
+        if (string.IsNullOrWhiteSpace(r.Username))
+            errors.Add(new ErrorDetail { Field = "username", Message = "Username is required." });
+        if (string.IsNullOrWhiteSpace(r.Email))
+            errors.Add(new ErrorDetail { Field = "email", Message = "Email is required." });
+        if (string.IsNullOrWhiteSpace(r.Password))
+            errors.Add(new ErrorDetail { Field = "password", Message = "Password is required." });
+        if (string.IsNullOrWhiteSpace(r.ConfirmPassword))
+            errors.Add(new ErrorDetail { Field = "confirmPassword", Message = "Confirm password is required." });
+        if (r.Password != r.ConfirmPassword)
+            errors.Add(new ErrorDetail { Field = "confirmPassword", Message = "Passwords do not match." });
 
         if (await db.Users.AnyAsync(u => u.Username == username, ct))
             errors.Add(new ErrorDetail { Field = "username", Message = "Username already exists." });
-
-        if (r.Password != r.ConfirmPassword)
-            errors.Add(new ErrorDetail { Field = "confirmPassword", Message = "Passwords do not match." });
+        if (await db.Users.AnyAsync(u => u.Email == email, ct))
+            errors.Add(new ErrorDetail { Field = "email", Message = "Email already exists." });
 
         if (!Enum.TryParse<UserRole>(r.Role, true, out var parsedRole) ||
             (parsedRole != UserRole.Coach && parsedRole != UserRole.Member))
