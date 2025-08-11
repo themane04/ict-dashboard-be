@@ -1,11 +1,8 @@
-﻿using System.Security.Claims;
+﻿using ICTDashboard.Auth.Extensions;
 using ICTDashboard.Auth.Models.Dtos;
 using ICTDashboard.Auth.Services.Interfaces;
-using ICTDashboard.Core.Contexts;
-using ICTDashboard.Profile.Models.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace ICTDashboard.Auth.Controllers;
 
@@ -22,32 +19,27 @@ public class AuthController : ControllerBase
 
     [Authorize]
     [HttpGet("me")]
-    public async Task<ActionResult<UserDto>> GetMe([FromServices] IctDbContext db)
+    public async Task<ActionResult<UserDto>> GetMe()
     {
-        if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id))
-            return Unauthorized();
+        var id = User.GetUserId();
+        if (id is null) return Unauthorized();
 
-        var user = await db.Users
-            .Include(u => u.Profile)
-            .FirstOrDefaultAsync(u => u.Id == id);
+        var dto = await _auth.GetMeAsync(id.Value);
+        if (dto is null) return Unauthorized();
 
-        if (user == null) return Unauthorized();
+        return Ok(dto);
+    }
 
-        return Ok(new UserDto
+    [HttpPost("signout")]
+    public new IActionResult SignOut()
+    {
+        Response.Cookies.Delete("access_token", new CookieOptions
         {
-            Id = user.Id,
-            Username = user.Username,
-            Email = user.Email,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            Role = user.Role.ToString(),
-            Profile = new UserProfileDto
-            {
-                PictureUrl = user.Profile.PictureUrl,
-                Birthday = user.Profile.Birthday,
-                Bio = user.Profile.Bio
-            }
+            Path = "/",
+            SameSite = SameSiteMode.None,
+            Secure = true
         });
+        return NoContent();
     }
 
     [HttpPost("signin")]
@@ -65,7 +57,7 @@ public class AuthController : ControllerBase
             HttpOnly = true,
             Secure = true,
             SameSite = SameSiteMode.None,
-            Expires = DateTimeOffset.UtcNow.AddHours(1),
+            Expires = DateTimeOffset.UtcNow.AddDays(7),
             Path = "/"
         };
 

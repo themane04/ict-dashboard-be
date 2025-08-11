@@ -4,6 +4,7 @@ using ICTDashboard.Auth.Models.Dtos;
 using ICTDashboard.Auth.Services.Interfaces;
 using ICTDashboard.Core.Contexts;
 using ICTDashboard.Profile.Models;
+using ICTDashboard.Profile.Models.Dtos;
 using Microsoft.EntityFrameworkCore;
 using ValidationException = ICTDashboard.Auth.Exceptions.ValidationException;
 
@@ -18,6 +19,31 @@ public class AuthService : IAuthService
     {
         _context = context;
         _config = config;
+    }
+
+    public async Task<UserDto?> GetMeAsync(int userId)
+    {
+        var user = await _context.Users
+            .Include(u => u.Profile)
+            .FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user == null) return null;
+
+        return new UserDto
+        {
+            Id = user.Id,
+            Username = user.Username,
+            Email = user.Email,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Role = user.Role.ToString(),
+            Profile = new UserProfileDto
+            {
+                PictureUrl = user.Profile.PictureUrl,
+                Birthday = user.Profile.Birthday,
+                Bio = user.Profile.Bio
+            }
+        };
     }
 
     public async Task<SignInResultDto> SignInAsync(SignInRequestDto requestDto)
